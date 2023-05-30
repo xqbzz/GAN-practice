@@ -16,7 +16,7 @@ import torch
 os.makedirs("images", exist_ok=True)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
+parser.add_argument("--n_epochs", type=int, default=60, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
 parser.add_argument("--b1", type=float, default=0.5, help="adam: decay of first order momentum of gradient")
@@ -106,20 +106,25 @@ class AvatarDataset(Dataset):
         self.descriptions = self.load_descriptions(description_file)
         self.transform = transform
 
+    # Получение первых 10 файлов изображений
+        self.image_files = sorted(os.listdir(image_folder))[:10]
+        
     def __len__(self):
-        return len(os.listdir(self.image_folder))
+        return len(self.image_files)
+
 
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.image_folder, f"{idx}.jpg")
+        img_name = os.path.join(self.image_folder, self.image_files[idx])  # Использование списка первых 10 файлов изображений
         image = Image.open(img_name).convert("RGB")
-
+        
         if self.transform:
             image = self.transform(image)
-
+            
         description = self.descriptions[idx]
-
+            
         return image, description
+
 
     def load_descriptions(self, description_file):
         with open(description_file, "r", encoding="utf-8") as f:
